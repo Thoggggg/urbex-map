@@ -1,248 +1,94 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React from 'react';
 import 'leaflet/dist/leaflet.css';
-import type { LatLng } from 'leaflet';
 import { PlaceList } from './components/PlaceList';
-// import { LeftPanel } from './components/LeftPanel'; // This and EditCard appear to be unused, can be removed
 import { Map } from './components/Map';
 import { UrbexIcon } from './components/icons';
-import { Place, PlaceStatus } from './types';
 import { EditCard } from './components/EditCard';
+import { usePlaces } from './hooks/usePlaces'; // Import our new hook
 
-// CHANGED: The port must be 3001 to point to your backend API, not the database.
-const API_BASE_URL = 'http://localhost:3001';
+/**
 
-interface AppHeaderProps {
-  isAddingSpot: boolean;
-  onToggleAddMode: () => void;
-}
+    The main header for the application.
+    */
+const AppHeader: React.FC<{ isAddingSpot: boolean; onToggleAddMode: () => void; }> = ({ isAddingSpot, onToggleAddMode }) => (
 
-const AppHeader: React.FC<AppHeaderProps> = ({ isAddingSpot, onToggleAddMode }) => (
   <header className="border-b border-gray-700 sticky top-0 bg-gray-900 z-20">
     <div className="container mx-auto px-6 py-4 flex justify-between items-center">
       <div className="flex items-center gap-2 text-amber-400">
-        <UrbexIcon className="w-8 h-8"/>
+        <UrbexIcon className="w-8 h-8" />
         <span className="text-xl font-bold text-gray-100">Urbex Logs</span>
       </div>
-      <div className="flex items-center space-x-6">
-        <button 
-          onClick={onToggleAddMode}
-          className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
-            isAddingSpot 
-              ? 'bg-red-600 hover:bg-red-700 text-white'
-              : 'bg-amber-400 hover:bg-amber-500 text-gray-900'
+      <button
+        onClick={onToggleAddMode}
+        className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${isAddingSpot
+            ? 'bg-red-600 hover:bg-red-700 text-white'
+            : 'bg-amber-400 hover:bg-amber-500 text-gray-900'
           }`}
-        >
-          {isAddingSpot ? 'Cancel' : 'Add Spot'}
-        </button>
-      </div>
+      >
+        {isAddingSpot ? 'Cancel' : 'Add Spot'}
+      </button>
     </div>
   </header>
 );
 
+/**
+
+    A simple loading screen component.
+    */
+const LoadingScreen = () => <div>Loading...</div>;
+
+/**
+
+    A component to display critical errors.
+    */
+const ErrorScreen = ({ message }: { message: string }) => (
+
+  <div className="h-screen w-screen flex flex-col items-center justify-center bg-gray-900 text-red-400">
+    <h2 className="text-2xl font-bold mb-4">An Error Occurred</h2>
+    <p>{message}</p>
+  </div>
+);
+
+/**
+
+    The root component of the application.
+    */
 const App: React.FC = () => {
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
-  const [editingPlace, setEditingPlace] = useState<Place | null>(null);
-  const [tempLocation, setTempLocation] = useState<LatLng | null>(null);
-  const [activeFilter, setActiveFilter] = useState<PlaceStatus | 'all'>('all');
-  const [isAddingSpot, setIsAddingSpot] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    filteredPlaces,
+    selectedPlaceId,
+    editingPlace,
+    tempLocation,
+    activeFilter,
+    isAddingSpot,
+    isLoading,
+    error,
+    actions,
+  } = usePlaces();
 
-  // [THE FIX] Restore the isInitialLoad state for the loading effect
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  // [THE FIX] Define the helper function at the component level
-  const getTodayDateString = () => new Date().toISOString().split('T')[0];
-
-  // --- Data Fetching ---
-  useEffect(() => {
-    const loadPlaces = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/places`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const placesFromApi = await response.json();
-        const formattedPlaces: Place[] = placesFromApi.map((p: any) => ({
-            ...p,
-            location: { lat: p.lat, lng: p.lng }
-        }));
-        setPlaces(formattedPlaces);
-      } catch (err: any) {
-        setError('Failed to load place data from the server. Is the backend running?');
-        console.error(err);
-      } finally {
-        setIsInitialLoad(false); // This will now work
-      }
-    };
-    loadPlaces();
-  }, []);
-
-  // --- State Handlers ---
-  const handleSelectPlace = useCallback((id: number) => {
-    if (isAddingSpot) setIsAddingSpot(false);
-    const newSelectedId = selectedPlaceId === id ? null : id;
-    setSelectedPlaceId(newSelectedId);
-    setTempLocation(null);
-    if (newSelectedId) {
-        const placeToEdit = places.find(p => p.id === newSelectedId);
-        setEditingPlace(placeToEdit || null);
-    } else {
-        setEditingPlace(null);
-    }
-  }, [isAddingSpot, selectedPlaceId, places]);
-
-  const handleMarkerDrag = (newLocation: LatLng) => {
-    setTempLocation(newLocation);
-  };
-  
-  const filteredPlaces = useMemo(() => {
-    if (activeFilter === 'all') return places;
-    return places.filter(p => p.status === activeFilter);
-  }, [places, activeFilter]);
-
-  const handleFilterChange = useCallback((filter: PlaceStatus | 'all') => {
-    if (selectedPlaceId) {
-        const selectedPlace = places.find(p => p.id === selectedPlaceId);
-        if (selectedPlace && filter !== 'all' && selectedPlace.status !== filter) {
-            setSelectedPlaceId(null);
-            setEditingPlace(null);
-        }
-    }
-    setActiveFilter(filter);
-  }, [selectedPlaceId, places]);
-
-  const handleToggleAddMode = useCallback(() => {
-    setIsAddingSpot(prev => !prev);
-    setSelectedPlaceId(null);
-    setEditingPlace(null);
-  }, []);
-
-  // --- API Call Handlers ---
-
-  // [THE FIX] Restore the full implementation of handleAddSpot
-  const handleAddSpot = useCallback(async (location: LatLng, name: string) => {
-    const newPlaceData = {
-      name,
-      description: 'A newly added suggestion. Add more details!',
-      location: { lat: location.lat, lng: location.lng },
-      status: 'suggestion' as PlaceStatus,
-    };
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/places`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPlaceData),
-      });
-      if (!response.ok) throw new Error('Failed to create the place.');
-      const savedPlaceFromApi = await response.json();
-      const formattedPlace: Place = {
-        ...savedPlaceFromApi,
-        location: { lat: savedPlaceFromApi.lat, lng: savedPlaceFromApi.lng },
-      };
-      setPlaces(currentPlaces => [formattedPlace, ...currentPlaces]);
-      setIsAddingSpot(false);
-      if (activeFilter !== 'all' && activeFilter !== 'suggestion') {
-        setActiveFilter('all');
-      }
-      // Automatically select the new place to edit it
-      setSelectedPlaceId(formattedPlace.id);
-      setEditingPlace(formattedPlace);
-    } catch (error) {
-      console.error("Failed to add spot:", error);
-      setError("Could not save the new spot. Please try again.");
-    }
-  }, [activeFilter]);
-
-  const handleConfirmEdit = async (updatedData: Partial<Place>) => {
-    if (!editingPlace) return;
-    const formData = new FormData();
-    formData.append('name', updatedData.name || '');
-    formData.append('description', updatedData.description || '');
-    formData.append('status', updatedData.status || 'suggestion');
-    if (updatedData.status === 'visited') {
-      formData.append('visitedDate', updatedData.visitedDate || getTodayDateString());
-    }
-    if (updatedData.picture) {
-      formData.append('picture', updatedData.picture);
-    }
-    if (tempLocation) {
-      formData.append('location[lat]', tempLocation.lat.toString());
-      formData.append('location[lng]', tempLocation.lng.toString());
-    }
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/places/${editingPlace.id}`, {
-        method: 'PUT',
-        body: formData,
-      });
-      if (!response.ok) throw new Error('Failed to update place.');
-      const updatedPlaceFromApi = await response.json();
-      const formattedPlace: Place = { ...updatedPlaceFromApi, location: { lat: updatedPlaceFromApi.lat, lng: updatedPlaceFromApi.lng }};
-      setPlaces(currentPlaces => currentPlaces.map(p => p.id === editingPlace.id ? formattedPlace : p));
-      setTempLocation(null);
-      setEditingPlace(null);
-      setSelectedPlaceId(null);
-    } catch (error) { console.error("Failed to update place:", error); setError("Could not update place."); }
-  };
-
-  const handleCancelEdit = () => {
-    setTempLocation(null);
-    setEditingPlace(null);
-    setSelectedPlaceId(null);
-  };
-
-  const handleDelete = async () => {
-    if (!editingPlace) return;
-    if (window.confirm(`Are you sure you want to delete "${editingPlace.name}"?`)) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/places/${editingPlace.id}`, {
-                method: 'DELETE'
-            });
-            if (!response.ok) throw new Error('Failed to delete place on the server.');
-            setPlaces(currentPlaces => currentPlaces.filter(p => p.id !== editingPlace.id));
-            setEditingPlace(null);
-            setSelectedPlaceId(null);
-        } catch (error) {
-            console.error("Failed to delete place:", error);
-            setError("Could not delete the place. Please try again.");
-        }
-    }
-  };
-
-  // --- Render Logic ---
-  if (isInitialLoad) {
-    // Optional: Add a nice loading spinner here later
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-gray-900 text-red-400">
-        <h2 className="text-2xl font-bold mb-4">An Error Occurred</h2>
-        <p>{error}</p>
-        <p className="mt-2 text-sm text-gray-500">Please make sure your backend server is running.</p>
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
+  if (error) return <ErrorScreen message={error} />;
 
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-900">
-      <AppHeader isAddingSpot={isAddingSpot} onToggleAddMode={handleToggleAddMode} />
+      <AppHeader isAddingSpot={isAddingSpot} onToggleAddMode={actions.toggleAddMode} />
       <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
-        <section className="col-span-12 lg-col-span-5 xl:col-span-4 overflow-y-auto">
+        <section className="col-span-12 lg:col-span-5 xl:col-span-4 overflow-y-auto">
           {editingPlace ? (
             <EditCard
               key={editingPlace.id}
               initialData={editingPlace}
-              onConfirm={handleConfirmEdit}
-              onCancel={handleCancelEdit}
-              onDelete={handleDelete}
+              onConfirm={actions.confirmEdit}
+              onCancel={actions.cancelEdit}
+              onDelete={actions.deletePlace}
             />
           ) : (
             <PlaceList
               places={filteredPlaces}
               selectedPlaceId={selectedPlaceId}
-              onSelectPlace={handleSelectPlace}
+              onSelectPlace={actions.selectPlace}
               activeFilter={activeFilter}
-              onFilterChange={handleFilterChange}
+              onFilterChange={actions.filterChange}
             />
           )}
         </section>
@@ -250,11 +96,11 @@ const App: React.FC = () => {
           <Map
             places={filteredPlaces}
             selectedPlaceId={selectedPlaceId}
-            onSelectPlace={handleSelectPlace}
+            onSelectPlace={actions.selectPlace}
             isAddingSpot={isAddingSpot}
-            onAddSpot={handleAddSpot}
+            onAddSpot={actions.addSpot}
             tempLocation={tempLocation}
-            onMarkerDrag={handleMarkerDrag}
+            onMarkerDrag={actions.markerDrag}
           />
         </section>
       </main>
@@ -263,4 +109,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
