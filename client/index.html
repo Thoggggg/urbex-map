@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Urbex Logs - Track Your Explorations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* For custom scrollbar styling to match the dark aesthetic */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1f2937; /* dark-gray */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #4b5563; /* medium-gray */
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6b7280; /* light-gray */
+      }
+      .leaflet-container {
+        background: #111827; /* bg-gray-900 */
+      }
+      /* Custom Leaflet Popup for dark theme */
+      .urbex-popup .leaflet-popup-content-wrapper {
+          background-color: #1f2937; /* bg-gray-800 */
+          color: #d1d5db; /* text-gray-300 */
+          border-radius: 8px;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+          border: 1px solid #374151; /* border-gray-700 */
+      }
+      .urbex-popup .leaflet-popup-content {
+          margin: 13px 19px;
+          font-size: 14px;
+          line-height: 1.4;
+      }
+      .urbex-popup .leaflet-popup-tip {
+          background-color: #1f2937;
+      }
+      .urbex-popup .leaflet-popup-close-button {
+          color: #d1d5db !important;
+          top: 10px;
+          right: 10px;
+      }
+      .urbex-popup .leaflet-popup-close-button:hover {
+          color: #f59e0b !important; /* amber-400 */
+      }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react-leaflet": "https://esm.sh/react-leaflet@^5.0.0",
+    "leaflet": "https://esm.sh/leaflet@^1.9.4",
+    "leaflet/": "https://esm.sh/leaflet@^1.9.4/",
+    "vite": "https://esm.sh/vite@^7.0.5",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^4.7.0"
+  }
+}
+</script>
+</head>
+  <body class="antialiased font-sans bg-gray-900 text-gray-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
