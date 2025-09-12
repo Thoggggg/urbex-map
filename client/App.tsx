@@ -38,21 +38,23 @@ const AppHeader: React.FC<AppHeaderProps> = ({ isAddingSpot, onToggleAddMode }) 
     </div>
   </header>
 );
-// In client/src/App.tsx
 
 const App: React.FC = () => {
   const [places, setPlaces] = useState<Place[]>([]);
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
   const [editingPlace, setEditingPlace] = useState<Place | null>(null);
-  
-  // [MOVE FEATURE] Add state to hold the marker's temporary, unconfirmed position
   const [tempLocation, setTempLocation] = useState<LatLng | null>(null);
-
   const [activeFilter, setActiveFilter] = useState<PlaceStatus | 'all'>('all');
   const [isAddingSpot, setIsAddingSpot] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Data Fetching (No changes here) ---
+  // [THE FIX] Restore the isInitialLoad state for the loading effect
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // [THE FIX] Define the helper function at the component level
+  const getTodayDateString = () => new Date().toISOString().split('T')[0];
+
+  // --- Data Fetching ---
   useEffect(() => {
     const loadPlaces = async () => {
       try {
@@ -67,20 +69,19 @@ const App: React.FC = () => {
       } catch (err: any) {
         setError('Failed to load place data from the server. Is the backend running?');
         console.error(err);
-      } finally { setIsInitialLoad(false); }
+      } finally {
+        setIsInitialLoad(false); // This will now work
+      }
     };
     loadPlaces();
   }, []);
 
-  // --- State Handlers (No changes here) ---
+  // --- State Handlers ---
   const handleSelectPlace = useCallback((id: number) => {
     if (isAddingSpot) setIsAddingSpot(false);
     const newSelectedId = selectedPlaceId === id ? null : id;
     setSelectedPlaceId(newSelectedId);
-    
-    // [MOVE FEATURE] Reset temp location when selecting a new place or deselecting
     setTempLocation(null);
-
     if (newSelectedId) {
         const placeToEdit = places.find(p => p.id === newSelectedId);
         setEditingPlace(placeToEdit || null);
@@ -89,10 +90,9 @@ const App: React.FC = () => {
     }
   }, [isAddingSpot, selectedPlaceId, places]);
 
-    // [MOVE FEATURE] Create a handler to update the temporary location state
-    const handleMarkerDrag = (newLocation: LatLng) => {
-      setTempLocation(newLocation);
-    };
+  const handleMarkerDrag = (newLocation: LatLng) => {
+    setTempLocation(newLocation);
+  };
   
   const filteredPlaces = useMemo(() => {
     if (activeFilter === 'all') return places;
@@ -117,11 +117,43 @@ const App: React.FC = () => {
   }, []);
 
   // --- API Call Handlers ---
-  const handleAddSpot = useCallback(async (location: LatLng, name: string) => { /* ... */ }, [activeFilter]);
+
+  // [THE FIX] Restore the full implementation of handleAddSpot
+  const handleAddSpot = useCallback(async (location: LatLng, name: string) => {
+    const newPlaceData = {
+      name,
+      description: 'A newly added suggestion. Add more details!',
+      location: { lat: location.lat, lng: location.lng },
+      status: 'suggestion' as PlaceStatus,
+    };
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/places`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPlaceData),
+      });
+      if (!response.ok) throw new Error('Failed to create the place.');
+      const savedPlaceFromApi = await response.json();
+      const formattedPlace: Place = {
+        ...savedPlaceFromApi,
+        location: { lat: savedPlaceFromApi.lat, lng: savedPlaceFromApi.lng },
+      };
+      setPlaces(currentPlaces => [formattedPlace, ...currentPlaces]);
+      setIsAddingSpot(false);
+      if (activeFilter !== 'all' && activeFilter !== 'suggestion') {
+        setActiveFilter('all');
+      }
+      // Automatically select the new place to edit it
+      setSelectedPlaceId(formattedPlace.id);
+      setEditingPlace(formattedPlace);
+    } catch (error) {
+      console.error("Failed to add spot:", error);
+      setError("Could not save the new spot. Please try again.");
+    }
+  }, [activeFilter]);
 
   const handleConfirmEdit = async (updatedData: Partial<Place>) => {
     if (!editingPlace) return;
-
     const formData = new FormData();
     formData.append('name', updatedData.name || '');
     formData.append('description', updatedData.description || '');
@@ -132,13 +164,10 @@ const App: React.FC = () => {
     if (updatedData.picture) {
       formData.append('picture', updatedData.picture);
     }
-    
-    // [MOVE FEATURE] If there is a temporary location, add it to the form data
     if (tempLocation) {
       formData.append('location[lat]', tempLocation.lat.toString());
       formData.append('location[lng]', tempLocation.lng.toString());
     }
-
     try {
       const response = await fetch(`${API_BASE_URL}/api/places/${editingPlace.id}`, {
         method: 'PUT',
@@ -148,8 +177,6 @@ const App: React.FC = () => {
       const updatedPlaceFromApi = await response.json();
       const formattedPlace: Place = { ...updatedPlaceFromApi, location: { lat: updatedPlaceFromApi.lat, lng: updatedPlaceFromApi.lng }};
       setPlaces(currentPlaces => currentPlaces.map(p => p.id === editingPlace.id ? formattedPlace : p));
-      
-      // [MOVE FEATURE] Reset temp location on success
       setTempLocation(null);
       setEditingPlace(null);
       setSelectedPlaceId(null);
@@ -157,32 +184,22 @@ const App: React.FC = () => {
   };
 
   const handleCancelEdit = () => {
-    // [MOVE FEATURE] Reset temp location on cancel
     setTempLocation(null);
     setEditingPlace(null);
     setSelectedPlaceId(null);
   };
 
-  // [FULLY IMPLEMENTED] This function handles the "Delete" button.
   const handleDelete = async () => {
     if (!editingPlace) return;
-
-    // Show a confirmation dialog before proceeding
     if (window.confirm(`Are you sure you want to delete "${editingPlace.name}"?`)) {
         try {
             const response = await fetch(`${API_BASE_URL}/api/places/${editingPlace.id}`, {
                 method: 'DELETE'
             });
-
             if (!response.ok) throw new Error('Failed to delete place on the server.');
-            
-            // Remove the place from our local state
             setPlaces(currentPlaces => currentPlaces.filter(p => p.id !== editingPlace.id));
-
-            // Exit editing mode
             setEditingPlace(null);
             setSelectedPlaceId(null);
-
         } catch (error) {
             console.error("Failed to delete place:", error);
             setError("Could not delete the place. Please try again.");
@@ -190,7 +207,12 @@ const App: React.FC = () => {
     }
   };
 
-  // --- Render Logic (No changes here) ---
+  // --- Render Logic ---
+  if (isInitialLoad) {
+    // Optional: Add a nice loading spinner here later
+    return <div>Loading...</div>;
+  }
+
   if (error) {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center bg-gray-900 text-red-400">
@@ -205,7 +227,7 @@ const App: React.FC = () => {
     <div className="h-screen w-screen flex flex-col bg-gray-900">
       <AppHeader isAddingSpot={isAddingSpot} onToggleAddMode={handleToggleAddMode} />
       <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
-        <section className="col-span-12 lg:col-span-5 xl:col-span-4 overflow-y-auto">
+        <section className="col-span-12 lg-col-span-5 xl:col-span-4 overflow-y-auto">
           {editingPlace ? (
             <EditCard
               key={editingPlace.id}
