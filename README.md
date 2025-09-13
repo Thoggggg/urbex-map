@@ -20,8 +20,7 @@ A personnal urbex map to store the places where you went.
 2. Run the app:   `npm run dev`
 
 ## TODO
-- Add search bar
-- Add toast when Confirm or delete
+- Add shortcuts
 - Changing the map background
 - Spinners for all the loadings
 - Add custom tags

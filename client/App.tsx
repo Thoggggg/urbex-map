@@ -5,6 +5,7 @@ import { Map } from './components/Map';
 import { UrbexIcon } from './components/icons';
 import { EditCard } from './components/EditCard';
 import { usePlaces } from './hooks/usePlaces'; // Import our new hook
+import { Toaster } from 'react-hot-toast';
 
 /**
 The main header for the application.
@@ -71,6 +72,15 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-900">
+      <Toaster
+        position="bottom-center"
+        toastOptions={{
+          style: {
+            background: '#373c49', // Dark gray to match your theme
+            color: '#e5e7eb',      // Light gray text
+          },
+        }}
+      />
       <AppHeader isAddingSpot={isAddingSpot} onToggleAddMode={actions.toggleAddMode} />
       <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
         <section className="col-span-12 lg:col-span-5 xl:col-span-4 overflow-y-auto">

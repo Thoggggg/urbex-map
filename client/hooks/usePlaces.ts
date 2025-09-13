@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { LatLng } from 'leaflet';
 import { Place, PlaceStatus } from '../types';
 import * as placesApi from '../services/placesApi'; // Import our new service
+import { toast } from 'react-hot-toast';
 
 /**
  * A custom hook to manage all state and logic related to places.
@@ -86,8 +87,11 @@ export const usePlaces = () => {
       }
       setEditingPlace(newPlace);
       setSelectedPlaceId(newPlace.id);
-    } catch (err: any) {
+
+      toast.success(`'${name}' added successfully!`);
+    } catch (err: any) {      
       setError(err.message);
+      toast.error(err.message || 'Failed to add spot.');
     }
   };
 
@@ -111,8 +115,11 @@ export const usePlaces = () => {
       setEditingPlace(null);
       setSelectedPlaceId(null);
       setTempLocation(null);
+
+      toast.success('Place updated successfully!');
     } catch (err: any) {
       setError(err.message);
+      toast.error(err.message || 'Failed to save place.');
     }
   };
 
@@ -130,8 +137,11 @@ export const usePlaces = () => {
         setPlaces(current => current.filter(p => p.id !== editingPlace.id));
         setEditingPlace(null);
         setSelectedPlaceId(null);
+
+        toast.success(`'${editingPlace.name}' deleted.`);
       } catch (err: any) {
         setError(err.message);
+        toast.error(err.message || 'Failed to delete place.');
       }
     }
   };
