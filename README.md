@@ -11,6 +11,13 @@ A personnal urbex map to store the places where you went.
 3. This was made mainly with AI, proceed with your own risks again
 
 ## How to use
+### Run Locally
+
+**Prerequisites:**  Node.js
+
+
+1. Install dependencies: `npm install`
+2. Run the app:   `npm run dev`
 
 ## TODO
 - Add search bar
@@ -24,3 +31,4 @@ A personnal urbex map to store the places where you went.
 - Add fields (How to enter, dangerosity, dark place...)
 - Add stats (how many in a year, regions...)
 - Immich / AdventureXXX integration ?
+
