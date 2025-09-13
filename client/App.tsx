@@ -7,9 +7,8 @@ import { EditCard } from './components/EditCard';
 import { usePlaces } from './hooks/usePlaces'; // Import our new hook
 
 /**
-
-    The main header for the application.
-    */
+The main header for the application.
+*/
 const AppHeader: React.FC<{ isAddingSpot: boolean; onToggleAddMode: () => void; }> = ({ isAddingSpot, onToggleAddMode }) => (
 
   <header className="border-b border-gray-700 sticky top-0 bg-gray-900 z-20">
@@ -64,8 +63,9 @@ const App: React.FC = () => {
     isLoading,
     error,
     actions,
+    searchTerm,
+    setSearchTerm
   } = usePlaces();
-
   if (isLoading) return <LoadingScreen />;
   if (error) return <ErrorScreen message={error} />;
 
@@ -89,6 +89,8 @@ const App: React.FC = () => {
               onSelectPlace={actions.selectPlace}
               activeFilter={activeFilter}
               onFilterChange={actions.filterChange}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
             />
           )}
         </section>

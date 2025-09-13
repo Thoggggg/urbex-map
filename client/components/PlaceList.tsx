@@ -19,6 +19,8 @@ interface PlaceListProps {
   activeFilter: PlaceStatus | 'all';
   onSelectPlace: (id: number) => void;
   onFilterChange: (filter: PlaceStatus | 'all') => void;
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
 }
 
 // --- Sub-components for Clarity ---
@@ -40,6 +42,20 @@ const FilterBar = ({ activeFilter, onFilterChange }: { activeFilter: PlaceStatus
   </div>
 );
 
+const SearchBar = ({searchTerm, onSearchChange}: {searchTerm: string, onSearchChange: (term: string) => void}) => (
+    <div className="h-full flex flex-col bg-gray-900">
+      <div className="p-4 border-b border-gray-700">
+        <input
+          type="search"
+          placeholder="Search by name or description..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="w-full bg-[#373c49] border border-gray-600 rounded-md p-2 text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none"
+        />
+      </div>
+    </div>
+);
+
 const NoPlacesMessage = () => (
   <div className="text-center text-gray-500 pt-10">
     <p>No places found.</p>
@@ -57,11 +73,15 @@ export const PlaceList: React.FC<PlaceListProps> = ({
   selectedPlaceId, 
   activeFilter,
   onSelectPlace,
-  onFilterChange 
+  onFilterChange,
+  searchTerm,
+  onSearchChange
 }) => {
   return (
-    <div className="h-full flex flex-col bg-gray-900">
+    <div>
       <FilterBar activeFilter={activeFilter} onFilterChange={onFilterChange} />
+
+      <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
 
       <div className="flex-grow overflow-y-auto p-4 space-y-4">
         {places.length > 0 ? (

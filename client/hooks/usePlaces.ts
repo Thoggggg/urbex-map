@@ -15,6 +15,7 @@ export const usePlaces = () => {
   const [isAddingSpot, setIsAddingSpot] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Initial data load
   useEffect(() => {
@@ -35,10 +36,20 @@ export const usePlaces = () => {
   const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
   const filteredPlaces = useMemo(() => {
-    if (activeFilter === 'all') return places;
-    return places.filter(p => p.status === activeFilter);
-  }, [places, activeFilter]);
-  
+    const byStatus = places.filter(p => activeFilter === 'all' || p.status === activeFilter);
+    
+    // If there's no search term, return the result
+    if (!searchTerm.trim()) {
+      return byStatus;
+    }
+    
+    // Otherwise, also filter by the search term (case-insensitive)
+    return byStatus.filter(p => 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [places, activeFilter, searchTerm]);
+
   // --- Handlers ---
 
   const handleSelectPlace = useCallback((id: number) => {
@@ -133,6 +144,8 @@ export const usePlaces = () => {
     editingPlace,
     tempLocation,
     activeFilter,
+    searchTerm,
+    setSearchTerm,
     isAddingSpot,
     isLoading,
     error,
