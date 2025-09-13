@@ -35,7 +35,7 @@ export const getPlaces = async (): Promise<Place[]> => {
 export const createPlace = async (location: LatLng, name: string): Promise<Place> => {
   const newPlaceData = {
     name,
-    description: 'A newly added suggestion. Add more details!',
+    description: '',
     location: { lat: location.lat, lng: location.lng },
     status: 'suggestion',
   };
