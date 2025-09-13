@@ -10,11 +10,15 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Serve the 'uploads' directory as a static folder.
-const uploadsDir = path.join(__dirname, '../uploads');
+/**
+ * Serve the 'uploads' directory from the project root as a static folder.
+ * This makes images available at URLs like http://localhost:3001/uploads/filename.jpg
+ */
+const uploadsDir = path.join(__dirname, '../../uploads');
 app.use('/uploads', express.static(uploadsDir));
 
 // --- API Routes ---
+// All routes starting with /api/places will be handled by our placesRouter.
 app.use('/api/places', placesRouter);
 
 // --- Server Startup ---
