@@ -4,25 +4,30 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
+    "dev": "dotenv -e .env.development -- ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "npx esbuild ./src/index.ts --bundle --platform=node --target=node18 --outfile=dist/index.js --external:express --external:cors --external:sanitize-html --external:multer --external:path --external:fs --external:@prisma/client --external:.prisma/client"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
-    "@types/multer": "^2.0.0",
-    "@types/node": "^24.3.0",
-    "prisma": "^6.15.0",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.2"
-  },
   "dependencies": {
-    "@prisma/client": "^6.15.0",
-    "multer": "^2.0.2"
+    "@prisma/client": "^5.15.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "sanitize-html": "^2.13.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.14.2",
+    "@types/sanitize-html": "^2.11.0",
+    "dotenv-cli": "^7.4.2",
+    "esbuild": "^0.21.5",
+    "prisma": "^5.15.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
   }
 }

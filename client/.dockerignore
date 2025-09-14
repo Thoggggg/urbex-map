@@ -1,0 +1,16 @@
+# Ignore the node_modules folder to prevent it from overwriting
+# the one installed inside the Docker container.
+node_modules
+
+# Ignore build artifacts
+dist
+build
+
+# Ignore local environment files if any
+.env
+.env.local
+.env.development
+.env.test
+
+# Ignore npm debug logs
+npm-debug.log*

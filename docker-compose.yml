@@ -1,18 +1,44 @@
-# This file defines your development database service
-version: '3.8'
 services:
+  # The PostgreSQL Database Service
   db:
-    image: postgres:15 # Use a specific version of the official Postgres image
+    image: postgres:15
     restart: always
     environment:
-      # These are the credentials you will use in your .env file
-      POSTGRES_USER: urbex_user
-      POSTGRES_PASSWORD: OWmFmk00yrFpOg
-      POSTGRES_DB: urbex_db
-    ports:
-      - '5432:5432' # Exposes the database port to your local machine
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql/data # This saves your data even if you stop the container
+      - postgres_data:/var/lib/postgresql/data
+    # Note: We don't expose the port to the host, as it's only needed by the server internally.
 
+  # The Node.js Backend API Service
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: 3001
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - db # The server will wait for the db to be ready before starting.
+
+  # The React Frontend Service (served by Nginx)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8080:80" # Map host port 80 to the container's port 80
+    depends_on:
+      - server # The client will wait for the server to be ready.
+
+# Define named volumes for data persistence
 volumes:
   postgres_data:
+  uploads_data:
