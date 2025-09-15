@@ -1,0 +1,18 @@
+# This file defines your development database service
+version: '3.8'
+services:
+  db:
+    image: postgres:15 # Use a specific version of the official Postgres image
+    restart: always
+    environment:
+      # These are the credentials you will use in your .env file
+      POSTGRES_USER: urbex_user
+      POSTGRES_PASSWORD: OWmFmk00yrFpOg
+      POSTGRES_DB: urbex_db
+    ports:
+      - '5432:5432' # Exposes the database port to your local machine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # This saves your data even if you stop the container
+
+volumes:
+  postgres_data:
