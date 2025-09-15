@@ -1,5 +1,4 @@
-# This file defines your development database service
-version: '3.8'
+# Only for dev purposes
 services:
   db:
     image: postgres:15 # Use a specific version of the official Postgres image
