@@ -94,20 +94,29 @@ export const usePlaces = () => {
       toast.error(err.message || 'Failed to add spot.');
     }
   };
-
-  const handleConfirmEdit = async (updatedData: Partial<Place>) => {
+const handleConfirmEdit = async (updatedData: Partial<Place>) => {
     if (!editingPlace) return;
+
     const formData = new FormData();
-    Object.entries(updatedData).forEach(([key, value]) => {
-      if (value) formData.append(key, value);
-    });
+
+    formData.append('name', updatedData.name || '');
+    formData.append('description', updatedData.description || '');
+    formData.append('status', updatedData.status || 'suggestion');
+    
+    if (updatedData.status === 'visited') {
+      formData.append('visitedDate', updatedData.visitedDate || getTodayDateString());
+    }
+
+    // A File object is a type of Blob, so this is okay
+    if (updatedData.picture) {
+      formData.append('picture', updatedData.picture);
+    }
+
     if (tempLocation) {
-        formData.append('location[lat]', tempLocation.lat.toString());
-        formData.append('location[lng]', tempLocation.lng.toString());
+      formData.append('location[lat]', tempLocation.lat.toString());
+      formData.append('location[lng]', tempLocation.lng.toString());
     }
-    if (updatedData.status === 'visited' && !updatedData.visitedDate) {
-        formData.append('visitedDate', getTodayDateString());
-    }
+
     
     try {
       const updatedPlace = await placesApi.updatePlace(editingPlace.id, formData);

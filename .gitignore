@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 # Server
-.env
+.env*
 
 /src/generated/prisma
 
