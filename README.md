@@ -1,4 +1,4 @@
-# URBEX MAp
+# URBEX MAP
 
 A personnal urbex map to store the places where you went. 
 
