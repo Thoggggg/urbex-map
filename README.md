@@ -11,13 +11,23 @@ A personnal urbex map to store the places where you went.
 3. This was made mainly with AI, proceed with your own risks again
 
 ## How to use
-### Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:**  Node.js, docker
+
+### Dev : 
+```
+./scripts/start.sh
+```
+
+### With docker
+
+Using the **docker-compose.yml** or the following command : 
+
+```
+./scripts/docker.sh
+```
 
 
-1. Install dependencies: `npm install`
-2. Run the app:   `npm run dev`
 
 ## TODO
 - Add shortcuts
@@ -29,5 +39,5 @@ A personnal urbex map to store the places where you went.
 - Cluster markers when unzoom
 - Add fields (How to enter, dangerosity, dark place...)
 - Add stats (how many in a year, regions...)
-- Immich / AdventureXXX integration ?
+- Immich / AdventureLog integration ?
 
