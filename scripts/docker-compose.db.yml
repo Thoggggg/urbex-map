@@ -11,7 +11,7 @@ services:
     ports:
       - '5432:5432' # Exposes the database port to your local machine
     volumes:
-      - postgres_data:/var/lib/postgresql/data # This saves your data even if you stop the container
+      - postgres_data-dev:/var/lib/postgresql/data # This saves your data even if you stop the container
 
 volumes:
-  postgres_data:
+  postgres_data-dev:
