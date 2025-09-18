@@ -1,29 +1,34 @@
-# [THE DEFINITIVE FIX] Use a Debian-based 'slim' image for maximum compatibility with Prisma.
+# Use a Debian-based Node.js 'slim' image for broad compatibility with native binaries like Prisma.
 FROM node:18-bullseye-slim
 
+# Set the working directory in the container.
 WORKDIR /app
 
-# Install ALL dependencies for the build
+# --- Dependency Installation ---
+# Copy package manifests first to leverage Docker's build cache.
 COPY package*.json ./
 RUN npm install
 
-# Copy the rest of your source code
+# --- Source Code & Build ---
+# Copy the rest of the application source code.
 COPY . .
 
-# Make the entrypoint script executable
-RUN chmod +x /app/docker-entrypoint.sh
-
-# Generate the Prisma client
+# Generate the Prisma client based on the schema.
 RUN npx prisma generate
 
-# Build the application
+# Build the TypeScript source into JavaScript.
 RUN npm run build
 
-# Remove development dependencies
+# Remove development dependencies to reduce the final image size.
 RUN npm prune --production
 
-# Set the entrypoint to run migrations on startup
+# --- Container Startup ---
+# Make the entrypoint script executable.
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Set the entrypoint to our custom script that runs migrations.
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
-# The command to run the application
+# Provide the default command to run the application.
+# This command is passed as arguments to the ENTRYPOINT script.
 CMD ["node", "dist/index.js"]

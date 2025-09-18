@@ -1,45 +1,57 @@
+# This file defines the multi-container Docker application for production.
+# It includes the database, backend server, and frontend client.
+version: '3.8'
+
 services:
-  # The PostgreSQL Database Service
+  # PostgreSQL Database Service
   db:
     image: postgres:15
     restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file: ./.env # Loads credentials from the root .env file.
     volumes:
+      # Mounts a named volume to persist database data across container restarts.
       - postgres_data:/var/lib/postgresql/data
-    # Note: We don't expose the port to the host, as it's only needed by the server internally.
+    networks:
+      - urbex-net
 
-  # The Node.js Backend API Service
+  # Node.js Backend API Service
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
     restart: always
+    env_file: ./.env
     ports:
+      # Exposes the API on port 3001 of the host machine.
       - "3001:3001"
-    env_file:
-      - ./.env
     volumes:
+      # Mounts a named volume to persist user-uploaded images.
       - uploads_data:/app/uploads
     depends_on:
-      - db
+      - db # Ensures the database container starts before the server.
+    networks:
+      - urbex-net
 
-    
-
-  # The React Frontend Service (served by Nginx)
+  # React Frontend Service (served by Nginx)
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
     restart: always
     ports:
-      - "8080:80" # Map host port 80 to the container's port 80
+      # Exposes the web application on port 8080 of the host machine.
+      - "8080:80"
     depends_on:
-      - server # The client will wait for the server to be ready.
+      - server
+    networks:
+      - urbex-net
 
-# Define named volumes for data persistence
+# Named volumes provide persistent storage for stateful data.
 volumes:
   postgres_data:
   uploads_data:
+
+# Defines a custom bridge network for the services to communicate.
+networks:
+  urbex-net:
+    driver: bridge
