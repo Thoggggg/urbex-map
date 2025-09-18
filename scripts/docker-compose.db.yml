@@ -3,11 +3,8 @@ services:
   db:
     image: postgres:15 # Use a specific version of the official Postgres image
     restart: always
-    environment:
-      # These are the credentials you will use in your .env file
-      POSTGRES_USER: urbex_user
-      POSTGRES_PASSWORD: OWmFmk00yrFpOg
-      POSTGRES_DB: urbex_db
+    env_file:
+      - ../.env
     ports:
       - '5432:5432' # Exposes the database port to your local machine
     volumes:

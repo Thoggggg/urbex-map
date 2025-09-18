@@ -34,16 +34,14 @@ setup_env_file "server/.env" "$SERVER_DEV_ENV_FILE"
 if grep -q "$PASSWORD_PLACEHOLDER" "$ROOT_ENV_FILE"; then
   echo ""
   echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-  echo "!!! SETUP REQUIRED: You must set a database password.               !!!"
-  echo ""
+  echo "!!! YOU ARE USING THE DEFAULT PASSWORD!!                            !!!"
+  echo "!!! This is not recommended for production.                         !!!"
   echo "!!! Please edit the following two files and replace                 !!!"
-  echo "!!! '$PASSWORD_PLACEHOLDER' with a secure password:          !!!"
+  echo "!!! '$PASSWORD_PLACEHOLDER' with a secure password:                 !!!"
   echo "!!!   1. $ROOT_ENV_FILE                                             !!!"
   echo "!!!   2. $SERVER_DEV_ENV_FILE                                       !!!"
   echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
   echo ""
-  # Exit the script, forcing the user to take action.
-  exit 1
 fi
 
 echo "--- 2. Starting local development database ---"
@@ -51,7 +49,7 @@ echo "--- 2. Starting local development database ---"
 # If we change the password, we must destroy the old volume.
 # This part is complex, so for now we will rely on the user doing it manually
 # if they change the password after the first run.
-docker compose -f "scripts/docker-compose.db.yml" -p urbex-dev up -d
+sudo docker compose -f "scripts/docker-compose.db.yml" -p urbex-dev up -d
 
 echo "--- 3. Installing dependencies ---"
 npm install
