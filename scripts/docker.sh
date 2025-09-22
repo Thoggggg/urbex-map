@@ -8,8 +8,7 @@
 set -e
 
 echo "--- Stopping and removing all containers, volumes, and networks... ---"
-# The '-v' flag removes the named volumes, ensuring a clean slate.
-docker compose down -v
+docker compose down
 
 echo ""
 echo "--- Building fresh images from Dockerfiles, ignoring cache... ---"
