@@ -1,7 +1,13 @@
 import { Place } from '../types';
 import type { LatLng } from 'leaflet';
 
+
 const API_BASE_URL = '.';
+
+type RawPlaceFromApi = Omit<Place, 'location' | 'picture'> & {
+  lat: number;
+  lng: number;
+};
 
 /**
  * A helper function to handle API responses and errors.
@@ -21,14 +27,18 @@ async function handleResponse(response: Response) {
 /**
  * A helper to format the flat place data from the API into the nested structure the frontend uses.
  */
-const formatPlace = (place: unknown): Place => ({
-  ...place,
-  location: { lat: place.lat, lng: place.lng },
-});
+const formatPlace = (place: RawPlaceFromApi): Place => {
+  const { lat, lng, ...rest } = place;
+  return {
+    ...rest,
+    location: { lat, lng },
+  };
+};
 
 export const getPlaces = async (): Promise<Place[]> => {
   const response = await fetch(`${API_BASE_URL}/api/places`);
-  const places = await handleResponse(response);
+  const places = await handleResponse(response) as RawPlaceFromApi[];
+
   return places.map(formatPlace);
 };
 
@@ -44,7 +54,7 @@ export const createPlace = async (location: LatLng, name: string): Promise<Place
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(newPlaceData),
   });
-  const place = await handleResponse(response);
+  const place = await handleResponse(response) as RawPlaceFromApi;
   return formatPlace(place);
 };
 
@@ -53,7 +63,7 @@ export const updatePlace = async (id: number, updatedData: FormData): Promise<Pl
     method: 'PUT',
     body: updatedData,
   });
-  const place = await handleResponse(response);
+  const place = await handleResponse(response) as RawPlaceFromApi;
   return formatPlace(place);
 };
 

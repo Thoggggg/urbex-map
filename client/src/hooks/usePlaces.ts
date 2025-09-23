@@ -33,19 +33,19 @@ export const usePlaces = () => {
     };
     loadData();
   }, []);
-  
+
   const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
   const filteredPlaces = useMemo(() => {
     const byStatus = places.filter(p => activeFilter === 'all' || p.status === activeFilter);
-    
+
     // If there's no search term, return the result
     if (!searchTerm.trim()) {
       return byStatus;
     }
-    
+
     // Otherwise, also filter by the search term (case-insensitive)
-    return byStatus.filter(p => 
+    return byStatus.filter(p =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -62,7 +62,7 @@ export const usePlaces = () => {
   }, [selectedPlaceId, places]);
 
   const handleMarkerDrag = (newLocation: LatLng) => setTempLocation(newLocation);
-  
+
   const handleFilterChange = useCallback((filter: PlaceStatus | 'all') => {
     if (editingPlace && filter !== 'all' && editingPlace.status !== filter) {
       setEditingPlace(null);
@@ -70,7 +70,7 @@ export const usePlaces = () => {
     }
     setActiveFilter(filter);
   }, [editingPlace]);
-  
+
   const handleToggleAddMode = () => {
     setIsAddingSpot(prev => !prev);
     setSelectedPlaceId(null);
@@ -89,9 +89,10 @@ export const usePlaces = () => {
       setSelectedPlaceId(newPlace.id);
 
       toast.success(`'${name}' added successfully!`);
-    } catch (err: unknown) {      
-      setError(err.message);
-      toast.error(err.message || 'Failed to add spot.');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(errorMessage);
+      toast.error(errorMessage || 'Failed to add spot.');
     }
   };
 const handleConfirmEdit = async (updatedData: Partial<Place>) => {
@@ -102,7 +103,7 @@ const handleConfirmEdit = async (updatedData: Partial<Place>) => {
     formData.append('name', updatedData.name || '');
     formData.append('description', updatedData.description || '');
     formData.append('status', updatedData.status || 'suggestion');
-    
+
     if (updatedData.status === 'visited') {
       formData.append('visitedDate', updatedData.visitedDate || getTodayDateString());
     }
@@ -117,7 +118,7 @@ const handleConfirmEdit = async (updatedData: Partial<Place>) => {
       formData.append('location[lng]', tempLocation.lng.toString());
     }
 
-    
+
     try {
       const updatedPlace = await placesApi.updatePlace(editingPlace.id, formData);
       setPlaces(current => current.map(p => p.id === updatedPlace.id ? updatedPlace : p));
@@ -127,8 +128,9 @@ const handleConfirmEdit = async (updatedData: Partial<Place>) => {
 
       toast.success('Place updated successfully!');
     } catch (err: unknown) {
-      setError(err.message);
-      toast.error(err.message || 'Failed to save place.');
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(errorMessage);
+      toast.error(errorMessage || 'Failed to save place.');
     }
   };
 
@@ -149,8 +151,9 @@ const handleConfirmEdit = async (updatedData: Partial<Place>) => {
 
         toast.success(`'${editingPlace.name}' deleted.`);
       } catch (err: unknown) {
-        setError(err.message);
-        toast.error(err.message || 'Failed to delete place.');
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+        setError(errorMessage);
+        toast.error(errorMessage || 'Failed to delete place.');
       }
     }
   };
