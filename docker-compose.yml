@@ -12,7 +12,7 @@ services:
 
   # This is now our single application service
   app:
-    image: ghcr.io/your-github-username/urbex-map:latest
+    image: ghcr.io/Thoggggg/urbex-map:latest
     restart: always
     env_file: ./.env
     ports:
