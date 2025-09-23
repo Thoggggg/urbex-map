@@ -1,4 +1,4 @@
-import type { LatLng } from 'leaflet';
+import type { LatLngExpression } from 'leaflet';
 
 export type PlaceStatus = 'visited' | 'suggestion' | 'inaccessible';
 
@@ -10,7 +10,7 @@ export interface Place {
   id: number;
   name: string;
   description: string;
-  location: LatLng;
+  location: LatLngExpression;
   status: PlaceStatus;
   
   // Optional fields, primarily for 'visited' status

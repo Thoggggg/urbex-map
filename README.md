@@ -2,6 +2,10 @@
 
 A personnal urbex map to store the places where you went. 
 
+## Features
+
+TODO
+
 ## Disclaimers
 
 1. Sharing urbexes sites is not recommended, do not put this on the internet without proper protection
@@ -12,21 +16,41 @@ A personnal urbex map to store the places where you went.
 
 ## How to use
 
-**Prerequisites:**  Node.js, docker
+Use this docker compose file to launch the app :
 
-### Dev : 
+```yaml
+services:
+  db:
+    image: postgres:15
+    restart: always
+    env_file: ./.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - urbex-net
+
+  urbex-map:
+    image: ghcr.io/your-github-username/urbex-map:latest
+    restart: always
+    env_file: ./.env
+    ports:
+      # Expose the application on port 8080
+      - "8080:3001"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - db
+    networks:
+      - urbex-net
+
+volumes:
+  postgres_data:
+  uploads_data:
+
+networks:
+  urbex-net:
+    driver: bridge
 ```
-./scripts/start.sh
-```
-
-### With docker
-
-Using the **docker-compose.yml** or the following command : 
-
-```
-./scripts/docker.sh
-```
-
 
 
 ## TODO

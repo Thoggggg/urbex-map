@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
-import type { LatLng, Marker as LeafletMarker } from 'leaflet';
-import L from 'leaflet';
+// import type { Marker as LeafletMarker } from 'leaflet';
+import L, { LatLng, latLng, LatLngExpression } from 'leaflet';
 import { Place, PlaceStatus } from '../types';
 
 interface MapProps {
@@ -14,7 +14,6 @@ interface MapProps {
   onMarkerDrag: (location: LatLng) => void;
 }
 
-// [THE FIX - STEP 1] Modify the icon generator to include an SVG animation tag
 const getIconByStatus = (status: PlaceStatus, isSelected: boolean) => {
   const statusColors: Record<PlaceStatus, string> = {
     visited: '#22c55e',
@@ -59,13 +58,14 @@ const getIconByStatus = (status: PlaceStatus, isSelected: boolean) => {
 /**
  * A helper component that recenters the map when the selected place changes.
  */
-const RecenterAutomatically = ({lat, lng}: {lat: number, lng: number}) => {
+const RecenterAutomatically = ({ center }: { center: LatLng }) => {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng]);
-  }, [lat, lng, map]);
+    map.setView(center);
+  }, [center, map]);
   return null;
-}
+};
+
 
 /**
  * A component to handle map click events for adding new spots.
@@ -82,7 +82,7 @@ const MapClickHandler = ({ isAddingSpot, onAddSpot }: { isAddingSpot: boolean, o
     },
   });
   return null;
-}
+};
 
 // This new component will solve the sizing issue.
 const ResizeHandler = () => {
@@ -99,17 +99,15 @@ const ResizeHandler = () => {
 
   return null;
 };
-
 const DraggableMarker = ({ place, isSelected, position, onSelect, onDragEnd }: {
   place: Place,
   isSelected: boolean,
-  position: [number, number], // Use the correctly typed position prop
+  position: LatLngExpression,
   onSelect: () => void,
   onDragEnd: (location: LatLng) => void
 }) => {
-  const markerRef = useRef<LeafletMarker>(null);
-  
-  // This effect ensures the icon is re-created when the selection state changes, thus restarting the animation.
+  const markerRef = useRef<L.Marker>(null);
+
   useEffect(() => {
     if (markerRef.current) {
       markerRef.current.setIcon(getIconByStatus(place.status, isSelected));
@@ -119,7 +117,6 @@ const DraggableMarker = ({ place, isSelected, position, onSelect, onDragEnd }: {
   return (
     <Marker
       ref={markerRef}
-      key={place.id}
       position={position}
       icon={getIconByStatus(place.status, isSelected)}
       draggable={isSelected}
@@ -134,55 +131,48 @@ const DraggableMarker = ({ place, isSelected, position, onSelect, onDragEnd }: {
 };
 
 
+
 // --- Main Map Component ---
-export const Map: React.FC<MapProps> = ({ 
-  places, 
-  selectedPlaceId, 
-  onSelectPlace, 
-  isAddingSpot, 
+export const Map: React.FC<MapProps> = ({
+  places,
+  selectedPlaceId,
+  onSelectPlace,
+  isAddingSpot,
   onAddSpot,
   tempLocation,
   onMarkerDrag
 }) => {
   const selectedPlace = places.find(p => p.id === selectedPlaceId);
-  
+
   // Default center for the map container
-  const mapCenter: [number, number] = selectedPlace 
-    ? [selectedPlace.location.lat, selectedPlace.location.lng] 
-    : [51.505, -0.09];
+  const mapCenter = selectedPlace ? latLng(selectedPlace.location as L.LatLngTuple | L.LatLngLiteral) : latLng(51.505, -0.09);
 
   return (
-    <MapContainer 
-      center={mapCenter} 
-      zoom={selectedPlace ? 13 : 5} 
-      scrollWheelZoom={true} 
+    <MapContainer
+      center={mapCenter}
+      zoom={selectedPlace ? 13 : 5}
+      scrollWheelZoom={true}
       className={`h-full w-full z-10 ${isAddingSpot ? 'cursor-crosshair' : ''}`}
     >
       <ResizeHandler />
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      
+
       {places.map(place => {
         const isSelected = place.id === selectedPlaceId;
+        const markerPosition = (isSelected && tempLocation)
+          ? tempLocation
+          : latLng(place.location as L.LatLngTuple | L.LatLngLiteral);
 
-        // [THE FIX] Ensure the marker's position is always a valid LatLngTuple [number, number]
-        const markerPosition: [number, number] = (isSelected && tempLocation)
-          ? [tempLocation.lat, tempLocation.lng]
-          : [place.location.lat, place.location.lng];
-        
-        return (
-          <DraggableMarker
-            key={place.id}
-            place={place}
-            isSelected={isSelected}
-            // Pass the correctly typed position to the sub-component
-            position={markerPosition}
-            onSelect={() => onSelectPlace(place.id)}
-            onDragEnd={onMarkerDrag}
-          />
-        )
+        return ( <DraggableMarker
+          key={place.id}
+          place={place}
+          isSelected={isSelected}
+          position={markerPosition}
+          onSelect={() => onSelectPlace(place.id)}
+          onDragEnd={onMarkerDrag} /> )
       })}
 
-      {selectedPlace && <RecenterAutomatically lat={selectedPlace.location.lat} lng={selectedPlace.location.lng} />}
+      {selectedPlace && <RecenterAutomatically center={mapCenter} />}
       <MapClickHandler isAddingSpot={isAddingSpot} onAddSpot={onAddSpot} />
     </MapContainer>
   );

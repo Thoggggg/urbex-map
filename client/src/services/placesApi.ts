@@ -1,7 +1,13 @@
 import { Place } from '../types';
-import type { LatLng } from 'leaflet';
+import { latLng, type LatLng } from 'leaflet';
+
 
 const API_BASE_URL = '.';
+
+type RawPlaceFromApi = Omit<Place, 'location' | 'picture'> & {
+  lat: number;
+  lng: number;
+};
 
 /**
  * A helper function to handle API responses and errors.
@@ -21,31 +27,30 @@ async function handleResponse(response: Response) {
 /**
  * A helper to format the flat place data from the API into the nested structure the frontend uses.
  */
-const formatPlace = (place: any): Place => ({
-  ...place,
-  location: { lat: place.lat, lng: place.lng },
-});
+const formatPlace = (place: RawPlaceFromApi): Place => {
+  const { lat, lng, ...rest } = place;
+  return {
+    ...rest,
+    location: latLng(lat, lng),
+  };
+};
 
 export const getPlaces = async (): Promise<Place[]> => {
   const response = await fetch(`${API_BASE_URL}/api/places`);
-  const places = await handleResponse(response);
+  const places = await handleResponse(response) as RawPlaceFromApi[];
+
   return places.map(formatPlace);
 };
 
 export const createPlace = async (location: LatLng, name: string): Promise<Place> => {
-  const newPlaceData = {
-    name,
-    description: '',
-    location: { lat: location.lat, lng: location.lng },
-    status: 'suggestion',
-  };
+  const newPlaceData = { name, description: '', location: { lat: location.lat, lng: location.lng }, status: 'suggestion' };
   const response = await fetch(`${API_BASE_URL}/api/places`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(newPlaceData),
   });
-  const place = await handleResponse(response);
-  return formatPlace(place);
+  const data = await handleResponse(response) as RawPlaceFromApi;
+  return formatPlace(data);
 };
 
 export const updatePlace = async (id: number, updatedData: FormData): Promise<Place> => {
@@ -53,7 +58,7 @@ export const updatePlace = async (id: number, updatedData: FormData): Promise<Pl
     method: 'PUT',
     body: updatedData,
   });
-  const place = await handleResponse(response);
+  const place = await handleResponse(response) as RawPlaceFromApi;
   return formatPlace(place);
 };
 

@@ -12,9 +12,7 @@ services:
 
   # This is now our single application service
   app:
-    build:
-      context: . # Build from the root context using the root Dockerfile
-      dockerfile: Dockerfile
+    image: ghcr.io/Thoggggg/urbex-map:latest
     restart: always
     env_file: ./.env
     ports:
