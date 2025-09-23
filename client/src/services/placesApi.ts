@@ -1,5 +1,5 @@
 import { Place } from '../types';
-import type { LatLng } from 'leaflet';
+import { latLng } from 'leaflet';
 
 
 const API_BASE_URL = '.';
@@ -31,7 +31,7 @@ const formatPlace = (place: RawPlaceFromApi): Place => {
   const { lat, lng, ...rest } = place;
   return {
     ...rest,
-    location: { lat, lng },
+    location: latLng(lat, lng),
   };
 };
 
