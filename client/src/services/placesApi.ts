@@ -1,5 +1,5 @@
 import { Place } from '../types';
-import { latLng } from 'leaflet';
+import { latLng, type LatLng } from 'leaflet';
 
 
 const API_BASE_URL = '.';
@@ -43,19 +43,14 @@ export const getPlaces = async (): Promise<Place[]> => {
 };
 
 export const createPlace = async (location: LatLng, name: string): Promise<Place> => {
-  const newPlaceData = {
-    name,
-    description: '',
-    location: { lat: location.lat, lng: location.lng },
-    status: 'suggestion',
-  };
+  const newPlaceData = { name, description: '', location: { lat: location.lat, lng: location.lng }, status: 'suggestion' };
   const response = await fetch(`${API_BASE_URL}/api/places`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(newPlaceData),
   });
-  const place = await handleResponse(response) as RawPlaceFromApi;
-  return formatPlace(place);
+  const data = await handleResponse(response) as RawPlaceFromApi;
+  return formatPlace(data);
 };
 
 export const updatePlace = async (id: number, updatedData: FormData): Promise<Place> => {

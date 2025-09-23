@@ -9,7 +9,7 @@ interface MapProps {
   selectedPlaceId: number | null;
   onSelectPlace: (id: number) => void;
   isAddingSpot: boolean;
-  onAddSpot: (location: LatLng) => void;
+  onAddSpot: (location: LatLng, name: string) => void;
   tempLocation: LatLng | null;
   onMarkerDrag: (location: LatLng) => void;
 }
@@ -82,7 +82,7 @@ const MapClickHandler = ({ isAddingSpot, onAddSpot }: { isAddingSpot: boolean, o
     },
   });
   return null;
-}
+};
 
 // This new component will solve the sizing issue.
 const ResizeHandler = () => {
@@ -107,7 +107,7 @@ const DraggableMarker = ({ place, isSelected, position, onSelect, onDragEnd }: {
   onDragEnd: (location: LatLng) => void
 }) => {
   const markerRef = useRef<L.Marker>(null);
-  
+
   useEffect(() => {
     if (markerRef.current) {
       markerRef.current.setIcon(getIconByStatus(place.status, isSelected));
@@ -133,51 +133,43 @@ const DraggableMarker = ({ place, isSelected, position, onSelect, onDragEnd }: {
 
 
 // --- Main Map Component ---
-export const Map: React.FC<MapProps> = ({ 
-  places, 
-  selectedPlaceId, 
-  onSelectPlace, 
-  isAddingSpot, 
+export const Map: React.FC<MapProps> = ({
+  places,
+  selectedPlaceId,
+  onSelectPlace,
+  isAddingSpot,
   onAddSpot,
   tempLocation,
   onMarkerDrag
 }) => {
   const selectedPlace = places.find(p => p.id === selectedPlaceId);
-  
+
   // Default center for the map container
-  const mapCenter = selectedPlace 
-  ? latLng(selectedPlace.location as L.LatLngTuple | L.LatLngLiteral) 
-  : latLng(51.505, -0.09);
+  const mapCenter = selectedPlace ? latLng(selectedPlace.location as L.LatLngTuple | L.LatLngLiteral) : latLng(51.505, -0.09);
 
   return (
-    <MapContainer 
-      center={mapCenter} 
-      zoom={selectedPlace ? 13 : 5} 
-      scrollWheelZoom={true} 
+    <MapContainer
+      center={mapCenter}
+      zoom={selectedPlace ? 13 : 5}
+      scrollWheelZoom={true}
       className={`h-full w-full z-10 ${isAddingSpot ? 'cursor-crosshair' : ''}`}
     >
       <ResizeHandler />
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      
+
       {places.map(place => {
         const isSelected = place.id === selectedPlaceId;
+        const markerPosition = (isSelected && tempLocation)
+          ? tempLocation
+          : latLng(place.location as L.LatLngTuple | L.LatLngLiteral);
 
-        // [THE FIX] Ensure the marker's position is always a valid LatLngTuple [number, number]
-        const markerPosition: [number, number] = (isSelected && tempLocation)
-          ? [tempLocation.lat, tempLocation.lng]
-          : [place.location.lat, place.location.lng];
-        
-        return (
-          <DraggableMarker
-            key={place.id}
-            place={place}
-            isSelected={isSelected}
-            // Pass the correctly typed position to the sub-component
-            position={markerPosition}
-            onSelect={() => onSelectPlace(place.id)}
-            onDragEnd={onMarkerDrag}
-          />
-        )
+        return ( <DraggableMarker
+          key={place.id}
+          place={place}
+          isSelected={isSelected}
+          position={markerPosition}
+          onSelect={() => onSelectPlace(place.id)}
+          onDragEnd={onMarkerDrag} /> )
       })}
 
       {selectedPlace && <RecenterAutomatically center={mapCenter} />}
