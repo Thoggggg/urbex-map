@@ -1,25 +1,31 @@
 import express from 'express';
-import cors from 'cors';
 import path from 'path';
-import placesRouter from './routes/places'; // Import the new router
+import placesRouter from './routes/places';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// --- Global Middlewares ---
-app.use(cors());
 app.use(express.json());
 
-/**
- * Serve the 'uploads' directory from the project root as a static folder.
- * This makes images available at URLs like http://localhost:3001/uploads/filename.jpg
- */
-const uploadsDir = path.join(__dirname, '../../uploads');
-app.use('/uploads', express.static(uploadsDir));
+// --- Static File Serving ---
+const clientBuildPath = path.join(__dirname, './public');
+app.use(express.static(clientBuildPath));
+
+// We use a simple, absolute path for reliability.
+const uploadsPath = path.resolve('/app/uploads');
+app.use('/uploads', express.static(uploadsPath));
+
 
 // --- API Routes ---
-// All routes starting with /api/places will be handled by our placesRouter.
 app.use('/api/places', placesRouter);
+
+
+// --- SPA Fallback ---
+// This must come *after* all other routes.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
+});
+
 
 // --- Server Startup ---
 app.listen(PORT, () => {

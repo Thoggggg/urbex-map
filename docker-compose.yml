@@ -1,57 +1,36 @@
-# This file defines the multi-container Docker application for production.
-# It includes the database, backend server, and frontend client.
 version: '3.8'
 
 services:
-  # PostgreSQL Database Service
   db:
     image: postgres:15
     restart: always
-    env_file: ./.env # Loads credentials from the root .env file.
+    env_file: ./.env
     volumes:
-      # Mounts a named volume to persist database data across container restarts.
       - postgres_data:/var/lib/postgresql/data
     networks:
       - urbex-net
 
-  # Node.js Backend API Service
-  server:
+  # This is now our single application service
+  app:
     build:
-      context: ./server
+      context: . # Build from the root context using the root Dockerfile
       dockerfile: Dockerfile
     restart: always
     env_file: ./.env
     ports:
-      # Exposes the API on port 3001 of the host machine.
-      - "3001:3001"
+      # Expose the application on port 8080
+      - "8080:3001"
     volumes:
-      # Mounts a named volume to persist user-uploaded images.
       - uploads_data:/app/uploads
     depends_on:
-      - db # Ensures the database container starts before the server.
+      - db
     networks:
       - urbex-net
 
-  # React Frontend Service (served by Nginx)
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      # Exposes the web application on port 8080 of the host machine.
-      - "8080:80"
-    depends_on:
-      - server
-    networks:
-      - urbex-net
-
-# Named volumes provide persistent storage for stateful data.
 volumes:
   postgres_data:
   uploads_data:
 
-# Defines a custom bridge network for the services to communicate.
 networks:
   urbex-net:
     driver: bridge

@@ -1,0 +1,43 @@
+# .github/workflows/ci.yml
+
+# This workflow runs Continuous Integration (CI) checks on every pull request.
+name: Continuous Integration
+
+# Trigger this workflow on any pull request targeting the 'main' branch.
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # This single job will lint the code and verify the Docker build.
+  lint_and_build:
+    name: Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Get the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up Node.js for linting
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm' # Cache npm dependencies for faster runs
+
+      - name: Install dependencies
+        run: npm install
+
+      # 3. Run the linter on the client workspace
+      - name: Run ESLint on client
+        run: npm run lint --workspace=client
+
+      # 4. Set up Docker Buildx for building the image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 5. Build the unified Docker image to ensure it doesn't have errors.
+      #    We don't push it anywhere; this is just a validation step.
+      - name: Build Docker image for validation
+        run: docker compose build
