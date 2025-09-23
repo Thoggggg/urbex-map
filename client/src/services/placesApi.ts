@@ -21,7 +21,7 @@ async function handleResponse(response: Response) {
 /**
  * A helper to format the flat place data from the API into the nested structure the frontend uses.
  */
-const formatPlace = (place: any): Place => ({
+const formatPlace = (place: unknown): Place => ({
   ...place,
   location: { lat: place.lat, lng: place.lng },
 });

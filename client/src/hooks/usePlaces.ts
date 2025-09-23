@@ -25,7 +25,7 @@ export const usePlaces = () => {
         setIsLoading(true);
         const fetchedPlaces = await placesApi.getPlaces();
         setPlaces(fetchedPlaces);
-      } catch (err: any) {
+      } catch {
         setError('Failed to load place data. Please ensure the server is running.');
       } finally {
         setIsLoading(false);
@@ -89,7 +89,7 @@ export const usePlaces = () => {
       setSelectedPlaceId(newPlace.id);
 
       toast.success(`'${name}' added successfully!`);
-    } catch (err: any) {      
+    } catch (err: unknown) {      
       setError(err.message);
       toast.error(err.message || 'Failed to add spot.');
     }
@@ -126,7 +126,7 @@ const handleConfirmEdit = async (updatedData: Partial<Place>) => {
       setTempLocation(null);
 
       toast.success('Place updated successfully!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message);
       toast.error(err.message || 'Failed to save place.');
     }
@@ -148,7 +148,7 @@ const handleConfirmEdit = async (updatedData: Partial<Place>) => {
         setSelectedPlaceId(null);
 
         toast.success(`'${editingPlace.name}' deleted.`);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message);
         toast.error(err.message || 'Failed to delete place.');
       }
