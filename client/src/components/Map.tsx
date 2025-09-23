@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
-import type { LatLng, Marker as LeafletMarker } from 'leaflet';
-import L from 'leaflet';
+// import type { Marker as LeafletMarker } from 'leaflet';
+import L, { LatLng, latLng, LatLngExpression } from 'leaflet';
 import { Place, PlaceStatus } from '../types';
 
 interface MapProps {
@@ -9,12 +9,11 @@ interface MapProps {
   selectedPlaceId: number | null;
   onSelectPlace: (id: number) => void;
   isAddingSpot: boolean;
-  onAddSpot: (location: LatLng, name: string) => void;
+  onAddSpot: (location: LatLng) => void;
   tempLocation: LatLng | null;
   onMarkerDrag: (location: LatLng) => void;
 }
 
-// [THE FIX - STEP 1] Modify the icon generator to include an SVG animation tag
 const getIconByStatus = (status: PlaceStatus, isSelected: boolean) => {
   const statusColors: Record<PlaceStatus, string> = {
     visited: '#22c55e',
@@ -59,13 +58,14 @@ const getIconByStatus = (status: PlaceStatus, isSelected: boolean) => {
 /**
  * A helper component that recenters the map when the selected place changes.
  */
-const RecenterAutomatically = ({lat, lng}: {lat: number, lng: number}) => {
+const RecenterAutomatically = ({ center }: { center: LatLng }) => {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng]);
-  }, [lat, lng, map]);
+    map.setView(center);
+  }, [center, map]);
   return null;
-}
+};
+
 
 /**
  * A component to handle map click events for adding new spots.
@@ -99,17 +99,15 @@ const ResizeHandler = () => {
 
   return null;
 };
-
 const DraggableMarker = ({ place, isSelected, position, onSelect, onDragEnd }: {
   place: Place,
   isSelected: boolean,
-  position: [number, number], // Use the correctly typed position prop
+  position: LatLngExpression,
   onSelect: () => void,
   onDragEnd: (location: LatLng) => void
 }) => {
-  const markerRef = useRef<LeafletMarker>(null);
+  const markerRef = useRef<L.Marker>(null);
   
-  // This effect ensures the icon is re-created when the selection state changes, thus restarting the animation.
   useEffect(() => {
     if (markerRef.current) {
       markerRef.current.setIcon(getIconByStatus(place.status, isSelected));
@@ -119,7 +117,6 @@ const DraggableMarker = ({ place, isSelected, position, onSelect, onDragEnd }: {
   return (
     <Marker
       ref={markerRef}
-      key={place.id}
       position={position}
       icon={getIconByStatus(place.status, isSelected)}
       draggable={isSelected}
@@ -132,6 +129,7 @@ const DraggableMarker = ({ place, isSelected, position, onSelect, onDragEnd }: {
     </Marker>
   );
 };
+
 
 
 // --- Main Map Component ---
@@ -147,9 +145,9 @@ export const Map: React.FC<MapProps> = ({
   const selectedPlace = places.find(p => p.id === selectedPlaceId);
   
   // Default center for the map container
-  const mapCenter: [number, number] = selectedPlace 
-    ? [selectedPlace.location.lat, selectedPlace.location.lng] 
-    : [51.505, -0.09];
+  const mapCenter = selectedPlace 
+  ? latLng(selectedPlace.location as L.LatLngTuple | L.LatLngLiteral) 
+  : latLng(51.505, -0.09);
 
   return (
     <MapContainer 
@@ -182,7 +180,7 @@ export const Map: React.FC<MapProps> = ({
         )
       })}
 
-      {selectedPlace && <RecenterAutomatically lat={selectedPlace.location.lat} lng={selectedPlace.location.lng} />}
+      {selectedPlace && <RecenterAutomatically center={mapCenter} />}
       <MapClickHandler isAddingSpot={isAddingSpot} onAddSpot={onAddSpot} />
     </MapContainer>
   );
