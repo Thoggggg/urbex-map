@@ -101,7 +101,7 @@ router.put('/:id', upload.single('picture'), async (req, res) => {
     }
     
     if (req.file) {
-      updateData.imageUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
+      updateData.imageUrl = `/uploads/${req.file.filename}`;
     } else if (status !== 'visited') {
       updateData.imageUrl = null;
     }
