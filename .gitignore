@@ -17,7 +17,7 @@ dist-ssr
 !.env.example
 
 /src/generated/prisma
-
+package-lock.json
 
 # Editor directories and files
 .vscode/*

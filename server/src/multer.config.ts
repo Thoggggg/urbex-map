@@ -2,8 +2,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// Ensures the 'uploads' directory exists at the root of the /server project.
-const uploadsDir = path.join(__dirname, '../../uploads');
+const uploadsDir = '/app/uploads';
+// Ensure the directory exists (important for the entrypoint script)
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -17,7 +17,6 @@ const storage = multer.diskStorage({
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
-
 /**
  * Multer middleware configured for single image uploads under the field name 'picture'.
  */
