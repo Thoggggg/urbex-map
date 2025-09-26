@@ -27,10 +27,10 @@
     "dev:client": "npm run dev --workspace=client",
     "dev:server": "npm run dev --workspace=server",
     "dev": "concurrently \"npm:dev:client\" \"npm:dev:server\"",
-    "docker:up": "sudo docker compose up -d",
+    "docker:up": "sudo docker compose -f docker-compose.dev.yml up -d",
     "docker:down": "sudo docker compose down",
     "docker:logs": "sudo docker compose logs -f app",
-    "docker:rebuild": "sudo docker compose down -v && sudo docker compose build --no-cache && sudo docker compose up -d"
+    "docker:rebuild": "sudo docker compose down -v && sudo docker compose -f docker-compose.dev.yml build --no-cache && sudo docker compose -f docker-compose.dev.yml up -d"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
