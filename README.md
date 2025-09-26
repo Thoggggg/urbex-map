@@ -1,10 +1,16 @@
 # URBEX MAP
 
-A personnal urbex map to store the places where you went. 
+A personnal urbex map to store the places where you went.
+
+<div align="center">
+  <img src="public/app-screenshots/example.png" alt="Checklist Home View" width="400" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+</div>
 
 ## Features
 
-TODO
+- **Saving places** : Save all the places you went to with a picture and a description
+- **Sharing with others** : Show your favorite urbex locations with your friends
+- **Plan your next visits** : Put a special tag on interesting places
 
 ## Disclaimers
 
