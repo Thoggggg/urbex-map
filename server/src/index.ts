@@ -12,7 +12,7 @@ const clientBuildPath = path.join(__dirname, './public');
 app.use(express.static(clientBuildPath));
 
 // We use a simple, absolute path for reliability.
-const uploadsPath = path.resolve('/app/uploads');
+const uploadsPath = '/app/uploads';
 app.use('/uploads', express.static(uploadsPath));
 
 
