@@ -1,10 +1,10 @@
 #!/bin/sh
-
-# This script is the container's entrypoint.
-# It ensures the database is up-to-date before starting the main application.
-
 set -e
 
+echo "Setting ownership for /app/uploads..."
+chown -R appuser:nodejs /app/uploads
+
+# --- Wait for PostgreSQL to be ready ---
 echo "Waiting for database to be ready..."
 until pg_isready -h db -p 5432 -U "${POSTGRES_USER}"
 do
@@ -20,7 +20,7 @@ if [ -z "${DATABASE_URL}" ]; then
 fi
 
 echo "Running database migrations..."
-npx prisma migrate deploy
+gosu appuser npx prisma migrate deploy
 
 echo "Starting the application..."
-exec node dist/index.js
+exec gosu appuser node dist/index.js
