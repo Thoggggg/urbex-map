@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, LayersControl } from 'react-leaflet';
 // import type { Marker as LeafletMarker } from 'leaflet';
 import L, { LatLng, latLng, LatLngExpression } from 'leaflet';
 import { Place, PlaceStatus } from '../types';
@@ -65,6 +65,7 @@ const RecenterAutomatically = ({ center }: { center: LatLng }) => {
   }, [center, map]);
   return null;
 };
+
 
 
 /**
@@ -155,7 +156,31 @@ export const Map: React.FC<MapProps> = ({
       className={`h-full w-full z-10 ${isAddingSpot ? 'cursor-crosshair' : ''}`}
     >
       <ResizeHandler />
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <LayersControl position="topright">
+        {/* Base Layer 1: Default Street Map */}
+        <LayersControl.BaseLayer checked name="Street Map">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+        </LayersControl.BaseLayer>
+
+        {/* Base Layer 2: Dark Mode Map */}
+        <LayersControl.BaseLayer name="Dark Mode">
+          <TileLayer
+            attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          />
+        </LayersControl.BaseLayer>
+
+        {/* Base Layer 3: Satellite Imagery */}
+        <LayersControl.BaseLayer name="Satellite">
+          <TileLayer
+            attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            url='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+          />
+        </LayersControl.BaseLayer>
+      </LayersControl>
 
       {places.map(place => {
         const isSelected = place.id === selectedPlaceId;

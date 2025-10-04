@@ -41,21 +41,6 @@ const StatusTagPicker = ({ activeTag, onTagClick }: { activeTag: PlaceStatus, on
   </div>
 );
 
-const ActionButtons = ({ onCancel, onConfirm, onDelete }: { onCancel: () => void, onConfirm: () => void, onDelete: () => void }) => (
-  <div className="flex-shrink-0 flex justify-between items-center mt-6 pt-4 border-t border-gray-700/50">
-    <button onClick={onDelete} className="bg-red-600 text-white px-5 py-2 rounded-md hover:bg-red-700 font-semibold">
-      Delete
-    </button>
-    <div className="flex items-center gap-3">
-      <button onClick={onCancel} className="bg-gray-500/80 text-white px-5 py-2 rounded-md hover:bg-gray-600 font-semibold">
-        Cancel
-      </button>
-      <button onClick={onConfirm} className="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 font-semibold">
-        Confirm
-      </button>
-    </div>
-  </div>
-);
 
 // --- Main Component ---
 export const EditCard: React.FC<EditCardProps> = ({ onConfirm, onCancel, onDelete, initialData }) => {
@@ -158,7 +143,26 @@ export const EditCard: React.FC<EditCardProps> = ({ onConfirm, onCancel, onDelet
       </div>
       
       {/* Action Buttons (using sub-component) */}
-      <ActionButtons onCancel={onCancel} onConfirm={handleConfirm} onDelete={onDelete} />
+      <div className="flex-shrink-0 flex justify-between items-center mt-6 pt-4 border-t border-gray-700/50">
+    <div className="flex items-center gap-3">
+      <button onClick={onDelete} className="bg-red-600 text-white px-5 py-2 rounded-md hover:bg-red-700 font-semibold">
+        Delete
+      </button>
+      <button onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${initialData.location.toString().replace('(', '').replace(')', '').replace('LatLng', '')}`, '_blank')} 
+              className="bg-white-600 text-white px-5 py-2 rounded-md hover:bg-gray-700 font-semibold" title='Open on Google maps'>
+        <img  className="w-8 h-8" 
+            src="https://www.gstatic.com/marketing-cms/assets/images/0f/9a/58f1d92b46069b4a8bdc556b612c/google-maps.webp=s48-fcrop64=1,00000000ffffffff-rw"/>
+      </button>
+    </div>
+    <div className="flex items-center gap-3">
+      <button onClick={onCancel} className="bg-gray-500/80 text-white px-5 py-2 rounded-md hover:bg-gray-600 font-semibold">
+        Cancel
+      </button>
+      <button onClick={handleConfirm} className="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 font-semibold">
+        Confirm
+      </button>
+    </div>
+  </div>
     </div>
   );
 };

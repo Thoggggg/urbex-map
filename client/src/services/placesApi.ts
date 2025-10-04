@@ -2,7 +2,7 @@ import { Place } from '../types';
 import { latLng, type LatLng } from 'leaflet';
 
 
-const API_BASE_URL = '.';
+const API_BASE_URL = '';
 
 type RawPlaceFromApi = Omit<Place, 'location' | 'picture'> & {
   lat: number;
