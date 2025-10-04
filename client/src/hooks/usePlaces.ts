@@ -26,6 +26,7 @@ export const usePlaces = () => {
         const fetchedPlaces = await placesApi.getPlaces();
         setPlaces(fetchedPlaces);
       } catch {
+        console.error('Failed to load place data.');
         setError('Failed to load place data. Please ensure the server is running.');
       } finally {
         setIsLoading(false);
