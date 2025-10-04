@@ -146,12 +146,12 @@ export const Map: React.FC<MapProps> = ({
   const selectedPlace = places.find(p => p.id === selectedPlaceId);
 
   // Default center for the map container
-  const mapCenter = selectedPlace ? latLng(selectedPlace.location as L.LatLngTuple | L.LatLngLiteral) : latLng(51.505, -0.09);
+  const mapCenter = selectedPlace ? latLng(selectedPlace.location as L.LatLngTuple | L.LatLngLiteral) : latLng(48.712, 2.201);
 
   return (
     <MapContainer
       center={mapCenter}
-      zoom={selectedPlace ? 13 : 5}
+      zoom={selectedPlace ? 15 : 11}
       scrollWheelZoom={true}
       className={`h-full w-full z-10 ${isAddingSpot ? 'cursor-crosshair' : ''}`}
     >
