@@ -144,7 +144,6 @@ export const Map: React.FC<MapProps> = ({
   onMarkerDrag
 }) => {
   const selectedPlace = places.find(p => p.id === selectedPlaceId);
-  const [mapBackground, setMapBackground] = useState<string>("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
 
   // Default center for the map container
   const mapCenter = selectedPlace ? latLng(selectedPlace.location as L.LatLngTuple | L.LatLngLiteral) : latLng(51.505, -0.09);
