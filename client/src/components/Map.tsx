@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, LayersControl } from 'react-leaflet';
 // import type { Marker as LeafletMarker } from 'leaflet';
 import L, { LatLng, latLng, LatLngExpression } from 'leaflet';
